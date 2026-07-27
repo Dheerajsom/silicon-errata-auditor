@@ -6,8 +6,9 @@ An Agent Skill for auditing embedded firmware and hardware configuration against
 
 - Establishes device, package, silicon, board, and peripheral revision identity without silently guessing.
 - Applies an explicit hierarchy for vendor documents and project evidence.
-- Inspects firmware, generated configuration, build artifacts, and hardware documentation.
-- Classifies each erratum as Not applicable, Potentially applicable, Confirmed exposure, Mitigated, or Requires lab verification.
+- Inspects firmware, generated configuration, build artifacts, and hardware documentation, using per-subsystem search patterns to map a triggering condition to the artifacts that carry it.
+- Classifies each erratum as Not applicable, Potentially applicable, Confirmed exposure, Mitigated, or Requires lab verification, defaulting to an unresolved status rather than to Not applicable when evidence runs out.
+- Checks whether a workaround survives the build: optimization, conditional compilation, link-time removal, revision gating, and configuration regeneration.
 - Produces traceable recommendations and practical laboratory verification plans.
 
 ## What it does not do
@@ -30,23 +31,24 @@ The skill can perform a preliminary audit with missing inputs, but it will keep 
 
 ## Example prompts
 
-- ?Audit this STM32H743 firmware against the applicable silicon errata.?
-- ?Determine which ESP32-S3 errata affect this repository and whether the official workarounds are implemented.?
-- ?I do not know the silicon revision. Perform a preliminary audit and tell me how to identify it.?
-- ?Create a lab verification plan for the potentially applicable Ethernet and DMA errata.?
-- ?Review this existing workaround and determine whether it fully satisfies the vendor erratum.?
+- "Audit this STM32H743 firmware against the applicable silicon errata."
+- "Determine which ESP32-S3 errata affect this repository and whether the official workarounds are implemented."
+- "I do not know the silicon revision. Perform a preliminary audit and tell me how to identify it."
+- "Create a lab verification plan for the potentially applicable Ethernet and DMA errata."
+- "Review this existing workaround and determine whether it fully satisfies the vendor erratum."
 
 ## Repository structure
 
 ```text
 silicon-errata-auditor/
-??? SKILL.md
-??? agents/
-?   ??? openai.yaml
-??? references/
-?   ??? report-format.md
-?   ??? source-policy.md
-??? README.md
+  SKILL.md                             Audit workflow
+  agents/
+    openai.yaml                        Agent interface metadata
+  references/
+    source-policy.md                   Evidence hierarchy, citation, revision handling
+    report-format.md                   Report template
+    investigation-playbook.md          Errata-class search patterns and doc-locating heuristics
+  README.md
 ```
 
 ## Installation
@@ -60,6 +62,8 @@ If discovery needs an explicit selection:
 ```sh
 npx skills add https://github.com/Dheerajsom/silicon-errata-auditor --skill silicon-errata-auditor
 ```
+
+To install manually, copy the repository into your agent's skills directory so that `SKILL.md` sits at `silicon-errata-auditor/SKILL.md` — for Claude Code, `~/.claude/skills/` for personal use or `.claude/skills/` inside a project. The `references/` directory must travel with `SKILL.md`; the skill loads those files on demand during an audit.
 
 ## Safety and evidence
 

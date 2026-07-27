@@ -1,19 +1,26 @@
 ---
 name: silicon-errata-auditor
-description: Audit embedded firmware and hardware configurations against vendor silicon errata. Use when determining whether MCU, SoC, FPGA, or peripheral errata apply to a particular device and silicon revision; locating affected firmware or configuration; validating vendor workarounds; producing evidence-linked errata compliance reports; or designing laboratory tests for hardware-dependent errata.
+description: Use when auditing embedded firmware or hardware configuration against vendor silicon errata - determining whether MCU, SoC, FPGA, or peripheral errata apply to a particular device and silicon revision; locating affected firmware or configuration; validating vendor workarounds; producing evidence-linked errata compliance reports; or designing laboratory tests for hardware-dependent errata.
 ---
 
 # Silicon Errata Auditor
 
 Audit the supplied project against authoritative silicon errata and preserve an evidence chain for every conclusion.
 
+## When not to use
+
+- General firmware code review, bug hunting, or performance work with no specific erratum question.
+- Board bring-up debugging where no vendor erratum has been implicated. Diagnose first; audit errata once a specific silicon behavior is suspected.
+- Software defects already reproduced and root-caused to project code.
+
 ## Start the audit
 
 1. Read [references/source-policy.md](references/source-policy.md) before selecting or citing sources.
 2. Read [references/report-format.md](references/report-format.md) before drafting the deliverable.
-3. Inventory the available device evidence, vendor documents, firmware, generated configuration, hardware files, build artifacts, and test records.
-4. State the audit scope and distinguish verified facts, user-provided claims, engineering inferences, unknowns, unverified document currency, and required follow-up evidence.
-5. Ask for missing information only when continuing would make the result materially unreliable. Otherwise, perform a clearly scoped preliminary analysis.
+3. Consult [references/investigation-playbook.md](references/investigation-playbook.md) when locating errata documents or searching the project.
+4. Inventory the available device evidence, vendor documents, firmware, generated configuration, hardware files, build artifacts, and test records.
+5. State the audit scope and distinguish verified facts, user-provided claims, engineering inferences, unknowns, unverified document currency, and required follow-up evidence.
+6. Ask for missing information only when continuing would make the result materially unreliable. Otherwise, perform a clearly scoped preliminary analysis.
 
 ## Establish device identity
 
@@ -62,7 +69,37 @@ Search all relevant artifacts, including:
 
 Use precise paths, symbols, configuration names, and line references. Trace configuration through build inclusion, initialization, call sites, affected runtime paths, and available runtime evidence. Do not infer that a peripheral is used merely because its driver exists. Treat generated files carefully: identify their source configuration and whether regeneration could remove a workaround.
 
+Read the erratum's triggering condition first, then search for the specific conditions it names. [references/investigation-playbook.md](references/investigation-playbook.md) gives per-subsystem search patterns, the positive-use chain that establishes a peripheral is actually active, and the generated-configuration traps that silently remove workarounds.
+
 ## Classify applicability
+
+The default when evidence runs out is an unresolved status, never Not applicable.
+
+```dot
+digraph classify {
+    "Vendor scope excludes this device/revision?" [shape=diamond];
+    "Positive evidence trigger cannot occur?" [shape=diamond];
+    "Trigger path evidenced in project?" [shape=diamond];
+    "Resolvable by static/documentary evidence?" [shape=diamond];
+    "Official workaround verified on every affected path?" [shape=diamond];
+    "Not applicable" [shape=box];
+    "Potentially applicable" [shape=box];
+    "Requires lab verification" [shape=box];
+    "Confirmed exposure" [shape=box];
+    "Mitigated" [shape=box];
+
+    "Vendor scope excludes this device/revision?" -> "Not applicable" [label="yes, authoritative"];
+    "Vendor scope excludes this device/revision?" -> "Positive evidence trigger cannot occur?" [label="no or unknown revision"];
+    "Positive evidence trigger cannot occur?" -> "Not applicable" [label="yes, positive evidence"];
+    "Positive evidence trigger cannot occur?" -> "Trigger path evidenced in project?" [label="no"];
+    "Trigger path evidenced in project?" -> "Resolvable by static/documentary evidence?" [label="no"];
+    "Resolvable by static/documentary evidence?" -> "Potentially applicable" [label="yes, pending evidence"];
+    "Resolvable by static/documentary evidence?" -> "Requires lab verification" [label="no, hardware-dependent"];
+    "Trigger path evidenced in project?" -> "Official workaround verified on every affected path?" [label="yes"];
+    "Official workaround verified on every affected path?" -> "Mitigated" [label="yes"];
+    "Official workaround verified on every affected path?" -> "Confirmed exposure" [label="no or partial"];
+}
+```
 
 Assign every analyzed erratum exactly one status:
 
@@ -128,3 +165,20 @@ Use the complete structure in [references/report-format.md](references/report-fo
 - Confidence reflects evidence quality rather than rhetorical certainty.
 - Unknowns and required inputs remain visible.
 - The report makes no claim that document currency was verified unless an official source was actually checked.
+
+## Red flags
+
+Each of these means the conclusion is over-claimed. Downgrade the status, lower the confidence, and record the required follow-up evidence.
+
+| Reasoning that appears | What it actually establishes |
+|---|---|
+| "No call site found, so the peripheral is unused." | Nothing. Search coverage is not proof of non-use. Establish the positive use chain instead. |
+| "The device is probably a recent revision." | Nothing. An unknown revision means analyzing every plausibly applicable revision. |
+| "The SDK is recent, so the workaround is included." | Nothing. Locate the workaround in the built image and confirm it runs on the affected path. |
+| "A comment or function name references the erratum." | Intent, not correctness, timing, or coverage. |
+| "The sibling part has the same erratum." | Nothing without explicit vendor scope covering this part. |
+| "This is the latest errata document." | Only true if an official index or product page was actually checked. Otherwise currency is unverified. |
+| "I recall this erratum affects..." | A discovery lead only. Model memory is never an authoritative citation. |
+| "The workaround is in the source tree." | Nothing about build inclusion, optimization survival, or regeneration. |
+
+Fabricating a register name, address, bit position, timing value, electrical limit, or affected-revision list is never acceptable, even to complete a template field. Record it as unknown.
