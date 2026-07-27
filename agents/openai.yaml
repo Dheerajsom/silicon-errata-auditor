@@ -1,0 +1,4 @@
+interface:
+  display_name: "Silicon Errata Auditor"
+  short_description: "Audit firmware against silicon errata"
+  default_prompt: "Use $silicon-errata-auditor to audit this embedded project against the applicable vendor silicon errata and produce an evidence-linked applicability report."
