@@ -18,9 +18,10 @@ Audit the supplied project against authoritative silicon errata and preserve an 
 1. Read [references/source-policy.md](references/source-policy.md) before selecting or citing sources.
 2. Read [references/report-format.md](references/report-format.md) before drafting the deliverable.
 3. Consult [references/investigation-playbook.md](references/investigation-playbook.md) when locating errata documents or searching the project.
-4. Inventory the available device evidence, vendor documents, firmware, generated configuration, hardware files, build artifacts, and test records.
-5. State the audit scope and distinguish verified facts, user-provided claims, engineering inferences, unknowns, unverified document currency, and required follow-up evidence.
-6. Ask for missing information only when continuing would make the result materially unreliable. Otherwise, perform a clearly scoped preliminary analysis.
+4. Consult [references/severity-rubric.md](references/severity-rubric.md) when scoring the severity of any finding.
+5. Inventory the available device evidence, vendor documents, firmware, generated configuration, hardware files, build artifacts, and test records.
+6. State the audit scope and distinguish verified facts, user-provided claims, engineering inferences, unknowns, unverified document currency, and required follow-up evidence.
+7. Ask for missing information only when continuing would make the result materially unreliable. Otherwise, perform a clearly scoped preliminary analysis.
 
 ## Establish device identity
 
@@ -111,6 +112,12 @@ Assign every analyzed erratum exactly one status:
 
 For every status, cite both device/erratum scope evidence and project evidence. Never treat absence of evidence as evidence of absence.
 
+## Assess severity
+
+Assign every analyzed erratum a severity independently of whether its mitigation has been verified. Score two dimensions — Impact and Likelihood/exposure in the audited configuration — and combine them into Critical, High, Medium, or Low. Record both inputs, never only the result.
+
+Consult [references/severity-rubric.md](references/severity-rubric.md) when scoring a finding, handling a vendor-stated severity tier, or assigning a provisional severity to a Potentially applicable or Requires lab verification finding. Unresolved findings still need a severity for prioritization; label it provisional and worst-case, never as confirmed.
+
 ## Validate a workaround
 
 Do not accept a comment, symbol name, or vendor-library presence as proof of mitigation. Verify that:
@@ -162,6 +169,7 @@ Use the complete structure in [references/report-format.md](references/report-fo
 - The applicability matrix contains every analyzed erratum.
 - Every detailed finding traces a vendor statement to device evidence, project evidence, analysis, action, and verification.
 - Citations identify exact documents and locations where available.
+- Every severity is derived from [references/severity-rubric.md](references/severity-rubric.md), records its Impact and Likelihood inputs, and is labeled provisional where the finding is unresolved.
 - Confidence reflects evidence quality rather than rhetorical certainty.
 - Unknowns and required inputs remain visible.
 - The report makes no claim that document currency was verified unless an official source was actually checked.

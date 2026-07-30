@@ -8,6 +8,7 @@ An Agent Skill for auditing embedded firmware and hardware configuration against
 - Applies an explicit hierarchy for vendor documents and project evidence.
 - Inspects firmware, generated configuration, build artifacts, and hardware documentation, using per-subsystem search patterns to map a triggering condition to the artifacts that carry it.
 - Classifies each erratum as Not applicable, Potentially applicable, Confirmed exposure, Mitigated, or Requires lab verification, defaulting to an unresolved status rather than to Not applicable when evidence runs out.
+- Scores each finding's severity from separate impact and likelihood dimensions, starting from the vendor-stated severity tier where the errata document gives one, and labels the severity of an unresolved finding as provisional.
 - Checks whether a workaround survives the build: optimization, conditional compilation, link-time removal, revision gating, and configuration regeneration.
 - Produces traceable recommendations and practical laboratory verification plans.
 
@@ -47,6 +48,7 @@ silicon-errata-auditor/
   references/
     source-policy.md                   Evidence hierarchy, citation, revision handling
     report-format.md                   Report template
+    severity-rubric.md                 Impact and likelihood scoring for finding severity
     investigation-playbook.md          Errata-class search patterns and doc-locating heuristics
   README.md
 ```

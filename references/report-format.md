@@ -14,7 +14,7 @@ Use this complete structure for every audit. Replace instructional italic text w
 
 ## 1. Executive summary
 
-_Summarize the device identity, number and severity of findings by classification, highest-risk exposures, verified mitigations, laboratory work, and decisions required. Do not hide unknown revision or document-currency limitations._
+_Summarize the device identity, number and severity of findings by classification using the Critical, High, Medium, and Low levels from [severity-rubric.md](severity-rubric.md), highest-risk exposures, verified mitigations, laboratory work, and decisions required. Do not hide unknown revision or document-currency limitations._
 
 ## 2. Device identity and revision evidence
 
@@ -48,9 +48,11 @@ _If identity is incomplete, list every plausibly applicable revision and explain
 
 | Erratum | Affected revisions | Project evidence | Status | Severity | Workaround state | Source |
 |---|---|---|---|---|---|---|
-| _ID and title_ | _Vendor-defined scope_ | _Concise artifact citations_ | _Exactly one allowed classification_ | _Justified severity_ | _Absent, partial, verified, not required, or unknown_ | _Exact vendor citation_ |
+| _ID and title_ | _Vendor-defined scope_ | _Concise artifact citations_ | _Exactly one allowed classification_ | _Critical, High, Medium, or Low derived per [severity-rubric.md](severity-rubric.md), with its Impact and Likelihood inputs_ | _Absent, partial, verified, not required, or unknown_ | _Exact vendor citation_ |
 
 Use exactly one status per row: Not applicable, Potentially applicable, Confirmed exposure, Mitigated, or Requires lab verification.
+
+Every row carries a severity. Mark the severity of a Potentially applicable or Requires lab verification row as provisional and worst-case, and name the evidence that would resolve it.
 
 ## 5. Detailed findings
 
@@ -61,6 +63,7 @@ Repeat this subsection for every analyzed erratum.
 - **Finding ID:** _Stable report identifier_
 - **Erratum ID:** _Vendor identifier_
 - **Classification:** _Exactly one allowed status_
+- **Severity:** _Critical, High, Medium, or Low derived per [severity-rubric.md](severity-rubric.md); state the Impact and Likelihood levels used, the vendor-stated severity tier and its citation when the errata document gives one, and any labeled engineering-inference escalation. Mark a severity on an unresolved finding as provisional and worst-case, pending named evidence._
 - **Confidence:** _High, medium, or low, with a brief evidence-based reason_
 - **Vendor statement:** _Concise quotation or faithful paraphrase of affected scope, trigger, consequence, workaround, and limitations; separate vendor language from interpretation_
 - **Project evidence:** _Cite identity and project paths, lines, symbols, configuration fields, logs, schematic locations, or state that the required evidence is unknown_
