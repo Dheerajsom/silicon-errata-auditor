@@ -1,6 +1,36 @@
-# Silicon Errata Audit Report Template
+# Silicon Errata Deliverable Formats
 
-Use this complete structure for every audit. Replace instructional italic text with project-specific evidence, or retain it as an explicit unknown when the information is unavailable.
+Choose the smallest format that preserves the complete evidence chain.
+
+## Select the mode
+
+Use a **full audit report** when auditing an entire device, subsystem, project, or errata document; comparing multiple errata; producing a compliance or sign-off artifact; or responding to an explicit request for a complete report. Its applicability matrix must contain every erratum in the stated scope.
+
+Use a **focused finding** when the request concerns one erratum, workaround, peripheral exposure, revision question, or laboratory-verification question. Do not emit empty sections from the full report merely for template compliance.
+
+When critical inputs are missing, issue a clearly labeled **Preliminary analysis** in either mode. Keep scope limitations, unresolved classifications, confidence, and required follow-up evidence prominent.
+
+## Focused finding format
+
+Use every field in this concise structure and preserve the bold labels verbatim. Replace each instruction with evidence or an explicit Unknown; do not omit an evidence-chain field merely because its input is missing. Keep Vendor severity/category and Project severity separate, and do not fold Verification procedure or Unknowns and required follow-up evidence into another field. Before returning the finding, verify that all 11 bold fields below are present.
+
+### Focused finding: _erratum ID and title or question_
+
+- **Scope and device/revision identity:** _State the audited artifact, target, exact identity evidence, plausible revisions, limitations, and confidence._
+- **Erratum and vendor citation:** _State scope, trigger, consequence, workaround, limitations, and exact authoritative document location._
+- **Vendor severity/category:** _Preserve the vendor's verbatim severity, disposition, impact category, or product-status label with its exact citation; otherwise state Unknown._
+- **Project evidence:** _Cite inspected paths, lines, symbols, build artifacts, configuration, hardware records, logs, or laboratory data._
+- **Classification:** _Use exactly one allowed status and state its evidence basis._
+- **Project severity:** _For a resolved applicable finding, state Critical, High, Medium, or Low derived from Impact and assessed Likelihood. For an unresolved finding, state provisional severity, supported exposure, uncertainty ceiling, and pending evidence. For Not applicable, state Not applicable and cite the excluding evidence._
+- **Analysis:** _Connect the vendor condition to project evidence and label verified facts, user claims, engineering inferences, contradictions, and unknowns._
+- **Existing mitigation:** _State verified implementation and path coverage, positively evidenced absence or defect, or Unknown when completeness is merely unverified._
+- **Recommended action:** _Give the smallest justified change and distinguish required mitigation from optional defense._
+- **Verification procedure:** _Define static, build, runtime, or laboratory checks with objective pass/fail criteria._
+- **Unknowns and required follow-up evidence:** _Name each unresolved input, how to obtain it safely, and how it could change the conclusion._
+
+## Full audit report format
+
+Use the complete structure below. Replace instructional italic text with project-specific evidence, or retain it as an explicit unknown when the information is unavailable.
 
 # Silicon Errata Applicability Report
 
@@ -14,7 +44,7 @@ Use this complete structure for every audit. Replace instructional italic text w
 
 ## 1. Executive summary
 
-_Summarize the device identity, number and severity of findings by classification using the Critical, High, Medium, and Low levels from [severity-rubric.md](severity-rubric.md), highest-risk exposures, verified mitigations, laboratory work, and decisions required. Do not hide unknown revision or document-currency limitations._
+_Summarize device identity and counts by classification. Summarize Critical, High, Medium, and Low project severity for applicable and unresolved findings, identify provisional values, and list Not applicable findings separately without a Critical–Low score. Highlight highest-risk exposures, verified mitigations, laboratory work, decisions, unknown revisions, and document-currency limitations._
 
 ## 2. Device identity and revision evidence
 
@@ -46,13 +76,21 @@ _If identity is incomplete, list every plausibly applicable revision and explain
 
 ## 4. Applicability matrix
 
-| Erratum | Affected revisions | Project evidence | Status | Severity | Workaround state | Source |
+| Erratum / vendor scope | Project evidence | Status | Vendor severity/category | Project severity | Workaround | Source |
 |---|---|---|---|---|---|---|
-| _ID and title_ | _Vendor-defined scope_ | _Concise artifact citations_ | _Exactly one allowed classification_ | _Critical, High, Medium, or Low derived per [severity-rubric.md](severity-rubric.md), with its Impact and Likelihood inputs_ | _Absent, partial, verified, not required, or unknown_ | _Exact vendor citation_ |
+| _ID, title, affected revisions_ | _Concise artifact citations_ | _Exactly one allowed classification_ | _Verbatim vendor label, or Unknown_ | _Resolved score, provisional score with supported exposure and ceiling, or Not applicable_ | _Positively evidenced absent/defective, verified, not required, or unknown_ | _Exact vendor citation_ |
 
 Use exactly one status per row: Not applicable, Potentially applicable, Confirmed exposure, Mitigated, or Requires lab verification.
 
-Every row carries a severity. Mark the severity of a Potentially applicable or Requires lab verification row as provisional and worst-case, and name the evidence that would resolve it.
+Keep the two severity fields distinct. Preserve the vendor category verbatim and cite its exact location; record Unknown when none is supplied. Do not directly compare it with project severity unless an authoritative mapping or demonstrated equivalence permits comparison.
+
+Every row carries a project-severity value:
+
+- For a resolved applicable finding, derive Critical, High, Medium, or Low from Impact and assessed Likelihood.
+- For Potentially applicable or Requires lab verification, label the result provisional, show Impact, supported exposure, and the uncertainty ceiling used for the worst-case matrix result, and name the evidence that would resolve it.
+- For Not applicable, record **Not applicable** and cite the excluding evidence; do not assign Critical through Low.
+
+Record a workaround as absent, incomplete, incorrectly timed, or invalidated only when positive project evidence supports that state. If artifacts merely fail to prove completeness, record the workaround as unknown and keep the classification unresolved.
 
 ## 5. Detailed findings
 
@@ -63,14 +101,18 @@ Repeat this subsection for every analyzed erratum.
 - **Finding ID:** _Stable report identifier_
 - **Erratum ID:** _Vendor identifier_
 - **Classification:** _Exactly one allowed status_
-- **Severity:** _Critical, High, Medium, or Low derived per [severity-rubric.md](severity-rubric.md); state the Impact and Likelihood levels used, the vendor-stated severity tier and its citation when the errata document gives one, and any labeled engineering-inference escalation. Mark a severity on an unresolved finding as provisional and worst-case, pending named evidence._
+- **Vendor severity/category:** _Preserve the vendor's verbatim severity, disposition, impact category, or product-status label with its exact document location; otherwise state Unknown. Do not silently translate it._
+- **Project severity:** _For a resolved applicable finding, state Critical, High, Medium, or Low with Impact and assessed Likelihood. For an unresolved finding, state provisional worst-case severity with Impact, supported exposure, uncertainty ceiling, and pending evidence. For Not applicable, state Not applicable with excluding evidence._
+- **Assessed likelihood/exposure:** _State the highest level supported by affirmative project evidence, or Not applicable._
+- **Uncertainty ceiling:** _For an unresolved finding, state the highest plausible level not ruled out and never describe it as observed; otherwise state not used._
 - **Confidence:** _High, medium, or low, with a brief evidence-based reason_
 - **Vendor statement:** _Concise quotation or faithful paraphrase of affected scope, trigger, consequence, workaround, and limitations; separate vendor language from interpretation_
 - **Project evidence:** _Cite identity and project paths, lines, symbols, configuration fields, logs, schematic locations, or state that the required evidence is unknown_
 - **Analysis:** _Connect vendor conditions to project evidence; identify verified facts, user-provided claims, inferences, contradictions, and unknowns_
-- **Existing mitigation:** _Describe implementation and execution-path evidence, or state none/unknown_
+- **Existing mitigation:** _Describe verified implementation and execution-path evidence; state an absent or defective workaround only with positive evidence; otherwise state unknown_
 - **Recommended action:** _Give the smallest required mitigation, optional defensive improvements, side effects, and any unverified suggestion label_
 - **Verification procedure:** _Specify static, build, runtime, or laboratory confirmation with objective criteria_
+- **Unknowns and required follow-up evidence:** _Name evidence needed to resolve applicability, trigger exposure, workaround completeness, assessed likelihood, or the uncertainty ceiling_
 - **Source citations:** _List exact vendor and project locators_
 
 ## 6. Recommended changes

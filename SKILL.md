@@ -1,17 +1,11 @@
 ---
 name: silicon-errata-auditor
-description: Use when auditing embedded firmware or hardware configuration against vendor silicon errata - determining whether MCU, SoC, FPGA, or peripheral errata apply to a particular device and silicon revision; locating affected firmware or configuration; validating vendor workarounds; producing evidence-linked errata compliance reports; or designing laboratory tests for hardware-dependent errata.
+description: Audit embedded firmware and hardware configurations against vendor silicon errata. Use when determining whether MCU, SoC, FPGA, or peripheral errata apply to a device or silicon revision; tracing affected implementation or configuration; validating workarounds; producing evidence-linked findings or compliance reports; or designing laboratory tests for silicon-specific behavior. Do not use for general firmware review, ordinary performance work, or generic board bring-up unless a silicon erratum or suspected silicon-specific behavior is in scope.
 ---
 
 # Silicon Errata Auditor
 
 Audit the supplied project against authoritative silicon errata and preserve an evidence chain for every conclusion.
-
-## When not to use
-
-- General firmware code review, bug hunting, or performance work with no specific erratum question.
-- Board bring-up debugging where no vendor erratum has been implicated. Diagnose first; audit errata once a specific silicon behavior is suspected.
-- Software defects already reproduced and root-caused to project code.
 
 ## Start the audit
 
@@ -41,7 +35,7 @@ When revision evidence is missing, request or recommend evidence from identifica
 
 ## Build the errata set
 
-1. Locate official errata for the exact product and revision using the source hierarchy.
+1. Locate official errata for the exact product and revision using the vendor-behavior authority guidance.
 2. Verify document currency from an official vendor source when network access permits. Otherwise, label currency unverified.
 3. Record document identifiers, revisions, publication dates, section numbers, erratum IDs, and page numbers when available.
 4. Include every entry that applies or could plausibly apply to an unknown revision. Record explicit scope exclusions.
@@ -80,9 +74,10 @@ The default when evidence runs out is an unresolved status, never Not applicable
 digraph classify {
     "Vendor scope excludes this device/revision?" [shape=diamond];
     "Positive evidence trigger cannot occur?" [shape=diamond];
-    "Trigger path evidenced in project?" [shape=diamond];
-    "Resolvable by static/documentary evidence?" [shape=diamond];
+    "Affected identity and trigger path evidenced?" [shape=diamond];
+    "Can documentary/static evidence resolve the unknown?" [shape=diamond];
     "Official workaround verified on every affected path?" [shape=diamond];
+    "Workaround absence or defect positively evidenced?" [shape=diamond];
     "Not applicable" [shape=box];
     "Potentially applicable" [shape=box];
     "Requires lab verification" [shape=box];
@@ -92,31 +87,35 @@ digraph classify {
     "Vendor scope excludes this device/revision?" -> "Not applicable" [label="yes, authoritative"];
     "Vendor scope excludes this device/revision?" -> "Positive evidence trigger cannot occur?" [label="no or unknown revision"];
     "Positive evidence trigger cannot occur?" -> "Not applicable" [label="yes, positive evidence"];
-    "Positive evidence trigger cannot occur?" -> "Trigger path evidenced in project?" [label="no"];
-    "Trigger path evidenced in project?" -> "Resolvable by static/documentary evidence?" [label="no"];
-    "Resolvable by static/documentary evidence?" -> "Potentially applicable" [label="yes, pending evidence"];
-    "Resolvable by static/documentary evidence?" -> "Requires lab verification" [label="no, hardware-dependent"];
-    "Trigger path evidenced in project?" -> "Official workaround verified on every affected path?" [label="yes"];
+    "Positive evidence trigger cannot occur?" -> "Affected identity and trigger path evidenced?" [label="no or unknown"];
+    "Affected identity and trigger path evidenced?" -> "Can documentary/static evidence resolve the unknown?" [label="no"];
+    "Can documentary/static evidence resolve the unknown?" -> "Potentially applicable" [label="yes, evidence pending"];
+    "Can documentary/static evidence resolve the unknown?" -> "Requires lab verification" [label="no, inherently physical/runtime"];
+    "Affected identity and trigger path evidenced?" -> "Official workaround verified on every affected path?" [label="yes"];
     "Official workaround verified on every affected path?" -> "Mitigated" [label="yes"];
-    "Official workaround verified on every affected path?" -> "Confirmed exposure" [label="no or partial"];
+    "Official workaround verified on every affected path?" -> "Workaround absence or defect positively evidenced?" [label="no"];
+    "Workaround absence or defect positively evidenced?" -> "Confirmed exposure" [label="yes"];
+    "Workaround absence or defect positively evidenced?" -> "Potentially applicable" [label="no, mitigation unverified"];
 }
 ```
 
 Assign every analyzed erratum exactly one status:
 
 - **Not applicable**: Authoritative device or revision scope excludes it, or positive project evidence proves a required trigger cannot occur in the audited configuration. Do not use missing code alone as proof.
-- **Potentially applicable**: The device or an unresolved plausible revision is affected, but available evidence cannot yet confirm the trigger, exposure, or complete mitigation.
-- **Confirmed exposure**: The affected identity and triggering path are evidenced, and the required workaround is absent, incomplete, incorrectly timed, or invalidated.
+- **Potentially applicable**: Applicability, trigger exposure, or complete mitigation remains unresolved, and documentary or static evidence could resolve it. This includes an evidenced trigger when the available artifacts merely fail to prove whether the workaround is complete.
+- **Confirmed exposure**: The affected identity and triggering path are evidenced, and positive project evidence shows the required workaround is absent, incomplete, incorrectly timed, or invalidated.
 - **Mitigated**: The affected identity and triggering path are evidenced, and the official workaround is verified on every relevant path with its limitations acknowledged.
-- **Requires lab verification**: Documentary and static project evidence cannot resolve a hardware-, timing-, analog-, load-, environmental-, or runtime-dependent condition; a laboratory test is necessary to decide.
+- **Requires lab verification**: An unresolved condition inherently depends on physical, timing, analog, environmental, load, or runtime behavior that documentary and static evidence cannot decide.
 
-For every status, cite both device/erratum scope evidence and project evidence. Never treat absence of evidence as evidence of absence.
+For every status, cite both device/erratum scope evidence and project evidence. Never treat missing code, an unsuccessful search, or any other absence of evidence as proof of non-use or workaround absence.
 
 ## Assess severity
 
-Assign every analyzed erratum a severity independently of whether its mitigation has been verified. Score two dimensions — Impact and Likelihood/exposure in the audited configuration — and combine them into Critical, High, Medium, or Low. Record both inputs, never only the result.
+Keep the vendor's severity, disposition, impact category, or product-status label separate from project severity. Preserve the vendor value verbatim with its exact document location, or record "Unknown" when the vendor supplies none. Do not assume the vendor scale maps ordinally to Critical, High, Medium, or Low.
 
-Consult [references/severity-rubric.md](references/severity-rubric.md) when scoring a finding, handling a vendor-stated severity tier, or assigning a provisional severity to a Potentially applicable or Requires lab verification finding. Unresolved findings still need a severity for prioritization; label it provisional and worst-case, never as confirmed.
+For resolved applicable findings, derive project severity from Impact and the assessed Likelihood supported by project evidence. For **Potentially applicable** and **Requires lab verification** findings, record both the evidence-supported likelihood and a separate uncertainty ceiling; derive a provisional worst-case severity from Impact and that disclosed ceiling, and name the evidence needed to resolve it. Never present the ceiling as an observed exposure rate. For **Not applicable**, record project severity as "Not applicable" with the excluding evidence rather than assigning Critical through Low.
+
+Consult [references/severity-rubric.md](references/severity-rubric.md) for the scoring model, notation, and vendor/project separation.
 
 ## Validate a workaround
 
@@ -164,12 +163,19 @@ Recommend a debugger, logic analyzer, oscilloscope, power analyzer, environmenta
 
 ## Produce the report
 
-Use the complete structure in [references/report-format.md](references/report-format.md). Ensure that:
+Choose the proportional deliverable defined in [references/report-format.md](references/report-format.md):
 
-- The applicability matrix contains every analyzed erratum.
+- Use a **full audit report** for an entire device, subsystem, project, or errata document; for multiple errata; for compliance or sign-off; or when the user requests a complete report. Include every erratum in the stated scope in the applicability matrix.
+- Use a **focused finding** for one erratum, workaround, peripheral exposure, revision question, or laboratory-verification question. Preserve every evidence-chain field required by the focused template without emitting unrelated full-report sections; record a required field as "Unknown" rather than omit it.
+- When critical inputs are missing, provide a clearly labeled preliminary analysis and keep scope limitations and required evidence prominent.
+
+For either mode, ensure that:
+
+- Before returning the deliverable, audit it field by field against the selected format. For a focused finding, preserve the template's 11 bold field labels verbatim; do not merge vendor and project severity or fold verification and unknowns into other fields. Record "Unknown" when a required value cannot be established.
 - Every detailed finding traces a vendor statement to device evidence, project evidence, analysis, action, and verification.
 - Citations identify exact documents and locations where available.
-- Every severity is derived from [references/severity-rubric.md](references/severity-rubric.md), records its Impact and Likelihood inputs, and is labeled provisional where the finding is unresolved.
+- Vendor severity/category and project-derived severity remain distinct.
+- Project severity follows [references/severity-rubric.md](references/severity-rubric.md), including "Not applicable" and provisional uncertainty-ceiling notation.
 - Confidence reflects evidence quality rather than rhetorical certainty.
 - Unknowns and required inputs remain visible.
 - The report makes no claim that document currency was verified unless an official source was actually checked.

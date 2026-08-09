@@ -1,16 +1,19 @@
 # Silicon Errata Auditor
 
-An Agent Skill for auditing embedded firmware and hardware configuration against vendor-published silicon errata. It helps identify applicable errata for an exact device revision, trace triggering conditions through project artifacts, validate official workarounds, identify laboratory-only questions, and produce an evidence-linked report.
+An Agent Skill for auditing embedded firmware and hardware configuration against vendor-published silicon errata. It helps identify applicable errata for an exact device revision, trace triggering conditions through project artifacts, validate official workarounds, identify laboratory-only questions, and produce an evidence-linked focused finding or full report.
 
 ## What it does
 
 - Establishes device, package, silicon, board, and peripheral revision identity without silently guessing.
-- Applies an explicit hierarchy for vendor documents and project evidence.
+- Applies claim-specific authority rules for vendor silicon behavior, directly observed device identity, project implementation, and engineering inference.
 - Inspects firmware, generated configuration, build artifacts, and hardware documentation, using per-subsystem search patterns to map a triggering condition to the artifacts that carry it.
-- Classifies each erratum as Not applicable, Potentially applicable, Confirmed exposure, Mitigated, or Requires lab verification, defaulting to an unresolved status rather than to Not applicable when evidence runs out.
-- Scores each finding's severity from separate impact and likelihood dimensions, starting from the vendor-stated severity tier where the errata document gives one, and labels the severity of an unresolved finding as provisional.
+- Classifies each erratum as Not applicable, Potentially applicable, Confirmed exposure, Mitigated, or Requires lab verification, requiring positive evidence of an absent or defective workaround before declaring Confirmed exposure.
+- Keeps a merely unverified workaround unresolved and never treats a failed search as proof of non-use.
+- Preserves vendor severity or disposition verbatim while deriving project severity independently from Impact × Likelihood.
+- Records evidence-supported likelihood separately from an unresolved finding's uncertainty ceiling and exposes both in provisional severity.
 - Checks whether a workaround survives the build: optimization, conditional compilation, link-time removal, revision gating, and configuration regeneration.
-- Produces traceable recommendations and practical laboratory verification plans.
+- Produces a complete audit report for broad or sign-off work and a concise, evidence-complete finding for a single erratum or question.
+- Records project severity as Not applicable, with excluding evidence, when the classification is Not applicable.
 
 ## What it does not do
 
@@ -37,6 +40,7 @@ The skill can perform a preliminary audit with missing inputs, but it will keep 
 - "I do not know the silicon revision. Perform a preliminary audit and tell me how to identify it."
 - "Create a lab verification plan for the potentially applicable Ethernet and DMA errata."
 - "Review this existing workaround and determine whether it fully satisfies the vendor erratum."
+- "Give me a focused finding for erratum ES1234, including the evidence still needed."
 
 ## Repository structure
 
@@ -46,9 +50,9 @@ silicon-errata-auditor/
   agents/
     openai.yaml                        Agent interface metadata
   references/
-    source-policy.md                   Evidence hierarchy, citation, revision handling
+    source-policy.md                   Claim-specific authority, citation, revision handling
     report-format.md                   Report template
-    severity-rubric.md                 Impact and likelihood scoring for finding severity
+    severity-rubric.md                 Project severity, assessed likelihood, uncertainty ceilings
     investigation-playbook.md          Errata-class search patterns and doc-locating heuristics
   README.md
 ```

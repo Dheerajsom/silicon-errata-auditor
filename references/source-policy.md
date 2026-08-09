@@ -2,18 +2,50 @@
 
 Apply this policy before researching errata, interpreting device scope, or making an applicability claim.
 
-## Evidence hierarchy
+## Authority by claim type
 
-Prefer evidence in this order:
+Select authority according to the claim being established. Do not impose one universal ordering across vendor behavior, device identity, and project state.
 
-1. Official vendor errata for the exact device and revision
+### Vendor silicon behavior and erratum scope
+
+Prefer:
+
+1. Official errata for the exact product and revision
 2. Official reference manual and datasheet
-3. Official application notes or vendor knowledge-base articles
-4. User-provided schematic, configuration, and firmware
-5. Tool-generated reports and build artifacts
-6. Clearly labeled engineering inference
+3. Official application notes
+4. Official vendor knowledge-base material
+5. Non-authoritative sources as discovery leads only
 
-Use lower-ranked evidence to supplement, not silently override, higher-ranked evidence. Treat forum posts, copied blog content, distributor summaries, and model memory as discovery leads only. Do not cite them as authoritative errata requirements.
+Only official, revision-appropriate vendor evidence may establish affected revisions, triggering conditions, consequences, or required workarounds. Treat forum posts, copied blog content, distributor summaries, and model memory only as leads for locating official material.
+
+### Device identity and revision
+
+Use directly observed identity evidence and interpret it through authoritative vendor documentation. Candidate evidence includes:
+
+- Identification registers
+- Programmer or debugger output
+- Boot or ROM logs
+- Package or mask markings
+- Manufacturing and traceability records
+- Board documentation
+
+Record provenance, the authoritative interpretation source, and confidence. Do not let an undocumented observation silently establish a revision.
+
+### Project implementation and configuration
+
+Treat inspected project artifacts as primary evidence of the project's actual state. Choose evidence based on the claim and prefer evidence closest to the shipped or executed configuration:
+
+- Runtime captures, register dumps, trace, and test records
+- Built binaries, disassembly, linker maps, and build reports
+- Exact shipping build configuration
+- Generated configuration together with its tracked source
+- Handwritten source, hardware files, and schematics
+
+Do not turn this list into a rigid ordering. Source may establish intent, while a built image may better establish inclusion and runtime evidence may better establish execution. Reconcile contradictions explicitly and state which artifact answers the claim most directly.
+
+### User claims and engineering inference
+
+Keep user-provided claims and engineering inferences explicitly labeled. Use them to guide investigation, but never let them silently replace authoritative vendor evidence for silicon behavior or directly inspected evidence for project state.
 
 ## Citation requirements
 

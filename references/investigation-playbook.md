@@ -31,7 +31,7 @@ Record the document identity from the document itself: title, document number, r
 
 ## Establishing that a peripheral is actually used
 
-The presence of a driver, HAL file, or SDK component proves nothing. Establish use positively through a chain; a break anywhere is evidence of non-use, and an unresolvable link is an unknown, not a negative.
+The presence of a driver, HAL file, or SDK component proves nothing. Establish use positively through a chain. A positively evidenced break that covers every relevant shipping path may prove a required trigger element cannot occur; a missing artifact, unsuccessful search, or unresolvable link remains unknown rather than evidence of non-use.
 
 1. **Clock gate enabled** — the peripheral clock enable bit or clock-control call for that instance.
 2. **Pin mux / IO assignment** — the peripheral's signals routed to pins, in code or generated configuration.
