@@ -29,6 +29,21 @@ Additional leads worth checking:
 
 Record the document identity from the document itself: title, document number, revision, date. Do not infer currency from a search-result date. Mark currency unverified unless you checked an official index or product page.
 
+## Finding existing workarounds and revision checks
+
+Search the project and its vendored SDK for code that already reacts to errata or to the silicon revision. Each hit is a lead to validate, not proof of mitigation.
+
+```sh
+rg -n -i 'errat(um|a)|workaround|silicon (bug|issue|rev)|\bES[0-9]{4}\b'
+rg -n 'ERRATA_|_WA_|\bWA_|FIX_|anomaly'
+rg -n -i 'rev_?id|chip_?rev|silicon_?rev|die_?rev|REV_MIN|revision'
+rg -n 'mfix-|--fix_|fix-cortex'
+```
+
+- **Vendor revision helpers.** Many SDKs expose a revision read or per-erratum predicate (for example, Nordic's nrfx ships `nrf*_erratas.h` with one check function per erratum). Trace each call to confirm it gates the workaround on the path that triggers the erratum.
+- **Code comments citing an erratum.** Record the document and revision the comment cites. If it predates the audited errata revision, compare the workaround text; IDs and workarounds can change between revisions.
+- **Build-level workarounds.** Some Arm core errata are mitigated by compiler or linker options rather than source code (GCC examples include `-mfix-cortex-m3-ldrd` and `-mfix-cortex-a53-835769`). Treat flag names as search leads and confirm what each one does in the toolchain's own documentation.
+
 ## Establishing that a peripheral is actually used
 
 The presence of a driver, HAL file, or SDK component proves nothing. Establish use positively through a chain. A positively evidenced break that covers every relevant shipping path may prove a required trigger element cannot occur; a missing artifact, unsuccessful search, or unresolvable link remains unknown rather than evidence of non-use.
@@ -69,7 +84,7 @@ Read the erratum's triggering condition first, then search for the conditions it
 | ADC / analog | Sampling time, channel sequencing, reference and supply configuration, calibration, temperature/voltage sensor use | Evidence the affected channel, sequence, or sampling configuration is never programmed |
 | Timers / RTC | Counter and prescaler setup, capture/compare modes, synchronization, tamper and calibration paths | Evidence the affected mode or register-access pattern never occurs |
 | Bootloader / security / OTP | Boot pin and option-byte configuration, secure boot, debug lock, key storage, one-time-programmable writes | Evidence the affected boot mode or provisioning step is never used |
-| CPU core (Arm) | Core revision, compiler and architecture flags, exception handling, barriers, MPU/TCM use | Core revision evidence excluding the erratum, or evidence the affected instruction sequence cannot be generated |
+| CPU core (Arm) | Core revision, compiler and architecture flags, errata-fix toolchain options, exception handling, barriers, MPU/TCM use, and prebuilt libraries compiled without those options | Core revision evidence excluding the erratum, or evidence the affected instruction sequence cannot be generated in any linked object |
 
 Do not narrow the search to one artifact type. A trigger often lives in generated configuration or a linker script rather than hand-written C.
 
@@ -93,5 +108,6 @@ A source-level workaround can be defeated by the toolchain. Check:
 - **Conditional compilation** — a workaround behind a macro requires evidence the macro is defined for the shipping target. Search the build system, not just the header default.
 - **Link-time removal** — the symbol survives dead-code elimination and LTO. Check the map file.
 - **Revision gating** — a workaround applied conditionally on silicon revision requires evidence the runtime revision check is correct for the audited part.
+- **Toolchain options** — an errata-fix compiler or linker flag must be set for every shipping target, and precompiled vendor or third-party libraries linked into the image count as unverified until their build records or disassembly show the fix applied.
 
 When any of these cannot be established from available artifacts, downgrade the classification and record the required follow-up evidence.
