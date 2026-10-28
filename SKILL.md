@@ -1,6 +1,6 @@
 ---
 name: silicon-errata-auditor
-description: Audit embedded firmware and hardware configurations against vendor silicon errata. Use when determining whether MCU, SoC, FPGA, or peripheral errata apply to a device or silicon revision; tracing affected implementation or configuration; validating workarounds; producing evidence-linked findings or compliance reports; or designing laboratory tests for silicon-specific behavior. Do not use for general firmware review, ordinary performance work, or generic board bring-up unless a silicon erratum or suspected silicon-specific behavior is in scope.
+description: Audit embedded firmware and hardware configurations against vendor silicon errata. Use when determining whether MCU, SoC, FPGA, Arm CPU core, or peripheral errata (errata sheets, silicon bugs, mask-set or die-revision issues) apply to a device or silicon revision; tracing affected implementation or configuration; validating workarounds; producing evidence-linked findings or compliance reports; or designing laboratory tests for silicon-specific behavior. Do not use for general firmware review, ordinary performance work, or generic board bring-up unless a silicon erratum or suspected silicon-specific behavior is in scope.
 ---
 
 # Silicon Errata Auditor
@@ -26,10 +26,13 @@ Record the most exact identity available:
 - Complete ordering code
 - Package
 - Die or silicon revision
+- CPU core revision (`r<n>p<n>`) when Arm core errata are in scope
 - Board revision
 - Relevant peripheral revisions
 
 Never silently assume a revision. Record an unavailable field as unknown and analyze all plausibly applicable revisions.
+
+Audit the revisions that ship, not only the unit on the bench. A production population can span several silicon revisions when supply, distributor stock, or a die shrink changes mid-run. Unless manufacturing or traceability records bound the shipped revisions, treat every revision the ordering code could deliver as plausible, and check whether firmware must handle more than one.
 
 When revision evidence is missing, request or recommend evidence from identification registers, boot logs, package markings, programmer or debugger output, manufacturing records, or board documentation. Do not invent a device-specific register address or register-reading procedure; require an authoritative vendor source before giving one.
 
@@ -37,18 +40,30 @@ When revision evidence is missing, request or recommend evidence from identifica
 
 1. Locate official errata for the exact product and revision using the vendor-behavior authority guidance.
 2. Verify document currency from an official vendor source when network access permits. Otherwise, label currency unverified.
-3. Record document identifiers, revisions, publication dates, section numbers, erratum IDs, and page numbers when available.
+3. Record document identifiers, revisions, publication dates, section numbers, erratum IDs, titles, and page numbers when available. Some vendors renumber errata between document revisions, so match an entry by title and content as well as ID when comparing documents or code comments.
 4. Include every entry that applies or could plausibly apply to an unknown revision. Record explicit scope exclusions.
-5. Extract for each entry:
+5. When Arm core errata are in scope, build the core errata set separately from the vendor's chip errata; the vendor document may not restate them.
+6. Extract for each entry:
    - Erratum ID and title
-   - Affected products and silicon revisions
+   - Affected products and silicon revisions, and any revision stated as fixed
    - Affected peripheral or subsystem
    - Triggering conditions
    - Observable failure or consequence
    - Official workaround and its limitations
    - Source citation
    - Ambiguities or missing information
-6. Keep vendor statements separate from engineering interpretation. Never elevate forum posts, copied blog content, or model memory to authoritative evidence.
+7. Keep vendor statements separate from engineering interpretation. Never elevate forum posts, copied blog content, or model memory to authoritative evidence.
+
+## Triage a large errata set
+
+A full errata document can hold dozens of entries. Every entry still receives exactly one status, but spend deep analysis where it changes the outcome:
+
+1. **Scope pass.** Classify entries that authoritative vendor scope excludes for the established revision, package, or product as **Not applicable**, citing the scope statement. When the revision is unknown, only an exclusion that holds for every plausible revision qualifies.
+2. **Subsystem pass.** Group the remaining entries by peripheral or subsystem. Establish the positive-use chain from [references/investigation-playbook.md](references/investigation-playbook.md) once per subsystem and reuse it for every entry in the group. Only a positively evidenced break covering every shipping path supports Not applicable. A subsystem whose use is merely unestablished leaves its entries unresolved; record the shared evidence gap once and reference it from each entry.
+3. **Trigger pass.** For subsystems in use, check each entry's specific triggering condition and workaround.
+4. **Depth by risk.** Give the fullest workaround validation and lab planning to entries with the highest resolved or provisional project severity.
+
+Name the pass that resolved each entry in its classification basis so a reviewer can audit the shortcut.
 
 ## Inspect the project
 
@@ -121,11 +136,13 @@ Consult [references/severity-rubric.md](references/severity-rubric.md) for the s
 
 Do not accept a comment, symbol name, or vendor-library presence as proof of mitigation. Verify that:
 
-- The implementation matches the official workaround without invented requirements.
+- The implementation matches the official workaround without invented requirements, as stated in the errata document revision being audited. When code cites an older document revision, compare the two workarounds; vendors revise them.
 - It executes on the affected path and at the required time.
 - Build options and compiler optimization cannot remove or reorder critical behavior.
 - Concurrency, interrupts, DMA, caches, memory ordering, and power transitions do not invalidate it.
 - It applies to the exact silicon revision.
+- On a mixed-revision population, it is either harmless on unaffected revisions according to vendor evidence or gated by a correct runtime revision check.
+- Toolchain-level workarounds, such as compiler or linker flags for Arm core errata, are set for every shipping build.
 - All vendor-stated limitations and side effects are acknowledged.
 
 Downgrade the conclusion to the appropriate unresolved status when any required property lacks evidence.
@@ -166,7 +183,7 @@ Recommend a debugger, logic analyzer, oscilloscope, power analyzer, environmenta
 Choose the proportional deliverable defined in [references/report-format.md](references/report-format.md):
 
 - Use a **full audit report** for an entire device, subsystem, project, or errata document; for multiple errata; for compliance or sign-off; or when the user requests a complete report. Include every erratum in the stated scope in the applicability matrix.
-- Use a **focused finding** for one erratum, workaround, peripheral exposure, revision question, or laboratory-verification question. Preserve every evidence-chain field required by the focused template without emitting unrelated full-report sections; record a required field as "Unknown" rather than omit it.
+- Use a **focused finding** for one erratum, workaround, peripheral exposure, revision question, or laboratory-verification question. Preserve every evidence-chain field required by the focused template without emitting unrelated full-report sections; record a required field as "Unknown" rather than omit it. [references/example-focused-finding.md](references/example-focused-finding.md) shows a completed finding for a fictional device.
 - When critical inputs are missing, provide a clearly labeled preliminary analysis and keep scope limitations and required evidence prominent.
 
 For either mode, ensure that:
@@ -188,6 +205,8 @@ Each of these means the conclusion is over-claimed. Downgrade the status, lower 
 |---|---|
 | "No call site found, so the peripheral is unused." | Nothing. Search coverage is not proof of non-use. Establish the positive use chain instead. |
 | "The device is probably a recent revision." | Nothing. An unknown revision means analyzing every plausibly applicable revision. |
+| "The bench unit reads revision Y, so production is revision Y." | The revision of one unit. Shipped revisions need manufacturing, traceability, or procurement evidence. |
+| "The erratum is fixed in revision Y, and we order revision Y." | Ordering intent only. Confirm the revision actually received and shipped, or keep earlier revisions in scope. |
 | "The SDK is recent, so the workaround is included." | Nothing. Locate the workaround in the built image and confirm it runs on the affected path. |
 | "A comment or function name references the erratum." | Intent, not correctness, timing, or coverage. |
 | "The sibling part has the same erratum." | Nothing without explicit vendor scope covering this part. |

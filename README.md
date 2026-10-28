@@ -4,14 +4,15 @@ An Agent Skill for auditing embedded firmware and hardware configuration against
 
 ## What it does
 
-- Establishes device, package, silicon, board, and peripheral revision identity without silently guessing.
+- Establishes device, package, silicon, CPU core, board, and peripheral revision identity without silently guessing, and keeps every revision that could ship in scope rather than only the bench unit's.
 - Applies claim-specific authority rules for vendor silicon behavior, directly observed device identity, project implementation, and engineering inference.
 - Inspects firmware, generated configuration, build artifacts, and hardware documentation, using per-subsystem search patterns to map a triggering condition to the artifacts that carry it.
 - Classifies each erratum as Not applicable, Potentially applicable, Confirmed exposure, Mitigated, or Requires lab verification, requiring positive evidence of an absent or defective workaround before declaring Confirmed exposure.
 - Keeps a merely unverified workaround unresolved and never treats a failed search as proof of non-use.
 - Preserves vendor severity or disposition verbatim while deriving project severity independently from Impact × Likelihood.
 - Records evidence-supported likelihood separately from an unresolved finding's uncertainty ceiling and exposes both in provisional severity.
-- Checks whether a workaround survives the build: optimization, conditional compilation, link-time removal, revision gating, and configuration regeneration.
+- Triages large errata documents in scope, subsystem, and trigger passes while still giving every entry exactly one status.
+- Checks whether a workaround survives the build: optimization, conditional compilation, link-time removal, revision gating, errata-fix toolchain flags, and configuration regeneration.
 - Produces a complete audit report for broad or sign-off work and a concise, evidence-complete finding for a single erratum or question.
 - Records project severity as Not applicable, with excluding evidence, when the classification is Not applicable.
 
@@ -54,6 +55,8 @@ silicon-errata-auditor/
     report-format.md                   Report template
     severity-rubric.md                 Project severity, assessed likelihood, uncertainty ceilings
     investigation-playbook.md          Errata-class search patterns and doc-locating heuristics
+    example-focused-finding.md         Worked focused finding for a fictional device
+  LICENSE
   README.md
 ```
 
@@ -74,3 +77,7 @@ To install manually, copy the repository into your agent's skills directory so t
 ## Safety and evidence
 
 Treat the output as an engineering audit aid, not a substitute for official vendor documentation or qualified safety review. Verify document currency, device revision, patches, and laboratory conclusions before relying on them in production or safety-critical systems.
+
+## License
+
+[MIT](LICENSE)
